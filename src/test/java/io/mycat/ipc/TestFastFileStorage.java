@@ -2,13 +2,16 @@ package io.mycat.ipc;
 
 import org.junit.Test;
 
+/**
+ * 快速稳健存储
+ */
 public class TestFastFileStorage {
 
 	@Test
 	public void testWriteAndRead() throws Exception {
 		FastestFileStorage st = new FastestFileStorage("mm.data", 100 * 1024 * 1024L, true, 1024 * 1024);
-		for (int i = 0; i < 100000; i++) {
-			String data = new String(" hellow " + i);
+		for (int i = 0; i < 10_0000; i++) {
+			String data = "hellow " + i;
 			int writeResult = st.writeData(data.getBytes());
 			if (writeResult == -1) {
 				System.out.println("full " + i);

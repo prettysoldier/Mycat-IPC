@@ -8,9 +8,9 @@ package io.mycat.ipc;
  * 
  */
 public class SharedMMRing {
-	public static final byte STORAGE_PRIMARY=0;
-	public static final byte STORAGE_EXTEND=1;
-	public static final byte STORAGE_EXT_FILE=2;
+	public static final byte STORAGE_PRIMARY = 0;
+	public static final byte STORAGE_EXTEND = 1;
+	public static final byte STORAGE_EXT_FILE = 2;
 	// means next data condition
 	public static final byte FLAG_NO_NEXT = 0B0001;
 	public static final byte FLAG_NEXT_ADJACENT = 0B0010;
