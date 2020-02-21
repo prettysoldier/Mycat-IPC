@@ -25,30 +25,34 @@ public class UnsafeMemory {
 			singleoneInstanceField.setAccessible(true);
 			unsafe = (Unsafe) singleoneInstanceField.get(null);
 			mmap = getMethod(FileChannelImpl.class, "map0", int.class, long.class, long.class);
-			mmap.setAccessible(true);
 			unmmap = getMethod(FileChannelImpl.class, "unmap0", long.class, long.class);
-			unmmap.setAccessible(true);
 			BYTE_ARRAY_OFFSET = unsafe.arrayBaseOffset(byte[].class);
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 	}
 
-	public static UnsafeMemory mapAndSetOffset(final String loc, long fileSize, boolean createNewFile, long startPos,
+	public static UnsafeMemory mapAndSetOffset(final String fileName, long fileSize, boolean createNewFile, long startPos,
 			long mapSize) throws Exception {
 		long size = 0;
-		RandomAccessFile backingFile = new RandomAccessFile(loc, "rw");
+		RandomAccessFile backingFile;
 		if (createNewFile) {
-			new File(loc).delete();
+			File file = new File(fileName);
+			System.out.println("原文件是否存在：" + file.exists());
+			boolean deleteSucc = file.delete();
+			System.out.println("原文件是否删除成功：" + deleteSucc);
+
+			backingFile = new RandomAccessFile(fileName, "rw");
 			size = Util.roundTo4096(fileSize);
 			backingFile.setLength(size);
+		}else{
+			backingFile = new RandomAccessFile(fileName, "rw");
 		}
 		FileChannel ch = backingFile.getChannel();
 		long addr = (long) mmap.invoke(ch, 1, startPos, mapSize);
 		ch.close();
 		backingFile.close();
 		return new UnsafeMemory(addr, startPos, mapSize);
-
 	}
 
 	public UnsafeMemory(long addr, long startPos, long size) {
