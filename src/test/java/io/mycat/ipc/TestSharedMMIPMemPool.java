@@ -10,7 +10,7 @@ public class TestSharedMMIPMemPool {
 		SharedMMIPMemPool pool = new SharedMMIPMemPool("testmm.dat", 1024 * 1024 * 100L, true);
 		Assert.assertTrue(pool.getQueueCountInMM() == 0);
 		SharedMMRing ring = pool.createNewRing((short) 1, 1024 * 1024 * 3, SharedMMRing.STORAGE_PRIMARY);
-
+		// 写
 		for (int i = 0; i < 100; i++) {
 			byte[] msg = ("Hellow " + i).getBytes();
 			while (!ring.putData(msg)) {
@@ -18,7 +18,7 @@ public class TestSharedMMIPMemPool {
 			}
 			System.out.println("add messge " + i);
 		}
-		// read
+		// 读
 		for (int i = 0; i < 100; i++) {
 
 			byte[] msg = ring.pullData();

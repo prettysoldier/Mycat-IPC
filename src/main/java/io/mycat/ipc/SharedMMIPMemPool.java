@@ -12,7 +12,7 @@ import java.util.Map;
  *
  */
 public class SharedMMIPMemPool {
-	private final String loc;
+	private final String fileName;
 	private UnsafeMemory mm;
 	private final int MAX_QUEUE_COUNT = 2048;
 	private final int MM_QUEUE_START = 2;
@@ -23,22 +23,22 @@ public class SharedMMIPMemPool {
 	/**
 	 * Constructs a new memory mapped file.
 	 * 
-	 * @param loc
+	 * @param fileName
 	 *            the file name
 	 * @param len
 	 *            the file length
 	 * @throws Exception
 	 *             in case there was an error creating the memory mapped file
 	 */
-	public SharedMMIPMemPool(final String loc, long len, boolean createNewFile) throws Exception {
+	public SharedMMIPMemPool(final String fileName, long len, boolean createNewFile) throws Exception {
 
-		this.loc = loc;
-		this.mm = UnsafeMemory.mapAndSetOffset(loc, len, createNewFile, 0, len);
+		this.fileName = fileName;
+		this.mm = UnsafeMemory.mapAndSetOffset(fileName, len, createNewFile, 0, len);
 		init();
 	}
 
-	public String getLoc() {
-		return loc;
+	public String getFileName () {
+		return fileName;
 	}
 
 	private void init() {
@@ -83,7 +83,7 @@ public class SharedMMIPMemPool {
 		SharedMMRing prevQueue = this.lastRing;
 		long queueAddr = (prevQueue == null) ? getFirstQueueAddr() : prevQueue.getMetaData().getAddrEnd();
 		QueueMeta meta = new QueueMeta(groupId, rawLength, queueAddr, storageType);
-		SharedMMRing ring = new SharedMMRing(meta,mm.getAddr());
+		SharedMMRing ring = new SharedMMRing(meta, mm.getAddr());
 		// update header
 		mm.putShortVolatile(0, ++curQueueCount);
 		// put map

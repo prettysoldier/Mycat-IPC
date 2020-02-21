@@ -11,9 +11,13 @@ import io.mycat.ipc.util.Util;
  *
  */
 public class FastestFileStorage {
+	/**
+	 * 文件头长度
+	 */
 	private static final int fileHeaderLen = 8 + 8;
+
 	private final long mapBlockSize;
-	private final String loc;
+	private final String fileName;
 	private final boolean writeMode;
 	private UnsafeMemory fileHeaderMM;
 	private volatile UnsafeMemory curMappingMM;
@@ -24,22 +28,22 @@ public class FastestFileStorage {
 	/**
 	 * Constructs a new memory mapped file.
 	 * 
-	 * @param loc
+	 * @param fileName
 	 *            the file name
-	 * @param len
+	 * @param maxLen
 	 *            the file length
 	 * @throws Exception
 	 *             in case there was an error creating the memory mapped file
 	 */
-	public FastestFileStorage(final String loc, long maxLen, boolean writerMode, int mapBlockSize) throws Exception {
+	public FastestFileStorage(final String fileName, long maxLen, boolean writerMode, int mapBlockSize) throws Exception {
 		if (writerMode) {
-			new File(loc).delete();
+			new File(fileName).delete();
 		}
 		this.writeMode = writerMode;
-		this.loc = loc;
+		this.fileName = fileName;
 		this.maxFileLen = Util.roundTo4096(maxLen);
 		this.mapBlockSize = Util.roundTo4096(mapBlockSize);
-		this.fileHeaderMM = UnsafeMemory.mapAndSetOffset(loc, maxFileLen, writerMode, 0, fileHeaderLen);
+		this.fileHeaderMM = UnsafeMemory.mapAndSetOffset(fileName, maxFileLen, writerMode, 0, fileHeaderLen);
 		init();
 
 	}
@@ -65,7 +69,7 @@ public class FastestFileStorage {
 			fileHeaderMM.putByte(getStartPos(), SharedMMRing.FLAG_NO_NEXT);
 		}
 		if (writeMode) {
-			curMappingMM = UnsafeMemory.mapAndSetOffset(loc, maxFileLen, this.writeMode, 0, this.mapBlockSize);
+			curMappingMM = UnsafeMemory.mapAndSetOffset(fileName, maxFileLen, this.writeMode, 0, this.mapBlockSize);
 		}
 	}
 
@@ -101,7 +105,7 @@ public class FastestFileStorage {
 				// first set writeStartPos to next block start addr
 				long nextWritePos = mm.getEndPos() + 1;
 				if (fileHeaderMM.compareAndSwapLong(getWriteIndexPos(), writeStartPos, nextWritePos)) {
-					curMappingMM = UnsafeMemory.mapAndSetOffset(loc, maxFileLen, false, mm.getEndPos(),
+					curMappingMM = UnsafeMemory.mapAndSetOffset(fileName, maxFileLen, false, mm.getEndPos(),
 							this.mapBlockSize);
 					UnsafeMemory nextmm = curMappingMM;
 					// set no more data flag first for the new block
@@ -128,7 +132,7 @@ public class FastestFileStorage {
 
 		} else {
 			return -1;
-			// throw new RuntimeException("file is full " + this.loc);
+			// throw new RuntimeException("file is full " + this.fileName);
 		}
 
 	}
